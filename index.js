@@ -30,10 +30,46 @@ async function run() {
     const menuCollection = client.db('BistroBoss').collection('menu');
     const reviewCollection = client.db('BistroBoss').collection('review');
     const cartsCollection = client.db('BistroBoss').collection('carts');
+    const usersCollection = client.db('BistroBoss').collection('users');
 
     app.get('/menu', async(req, res)=>{
         const allMenu = await menuCollection.find().toArray();
         res.send(allMenu)
+    })
+
+    app.post('/users', async(req, res)=>{
+      const users = req.body;
+      const query = {email: users.email}
+      const exist = await usersCollection.findOne(query);
+      if(exist){
+        return res.send({message: 'already exist'})
+      }
+      const result = await usersCollection.insertOne(users)
+      res.send(result)
+    })
+
+    app.patch('/users/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const updateDoc = {
+        $set:{
+          role: 'admin'
+        }
+      }
+      const result = await usersCollection.updateOne(query,updateDoc);
+      res.send(result)
+    })
+
+    app.delete('/users/:id',async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await usersCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    app.get('/users', async(req,res)=>{
+      const users = await usersCollection.find().toArray();
+      res.send(users)
     })
 
     app.get('/review', async(req, res)=>{
